@@ -19,7 +19,7 @@
 
       <div v-for='note,index in Searchnotes'>
 
-        <div class="panel-block">
+        <div class="panel-block single-note">
           <div class="column is-10">
             {{index+1}} 
             <span class="panel-icon" style="margin-top: 5px;">
@@ -43,6 +43,16 @@
         </div>
       </div>
 
+      <nav class="pagination  is-centered" role="navigation" aria-label="pagination">
+        
+        <ul class="pagination-list">
+          <li><a v-if="pagination.prev_page_url" @click="fetchNotes(pagination.prev_page_url)" :class="{'isDisabled' : !pagination.prev_page_url}" class="pagination-previous">Previous</a></li>
+          <li><a class="pagination-link is-current" aria-current="page">{{pagination.current_page}} of {{pagination.last_page}}</a></li>
+          <li><a v-if="pagination.next_page_url" @click="fetchNotes(pagination.next_page_url)" :class="{'isDisabled' : !pagination.next_page_url}" class="pagination-next is-pulled-left">Next</a></li>
+        </ul>
+        
+      </nav>
+
 
     </nav>
 
@@ -58,78 +68,118 @@
 </template>
 
 <script>
-import Addmodal from './Addmodal.vue'
-import ShowModal from './ShowModal.vue'
-import EditModal from './EditModal.vue'
-import DeleteModal from './DeleteModal.vue'
-import SearchNote from '../mixins/SearchNote'
+import Addmodal from "./Addmodal.vue";
+import ShowModal from "./ShowModal.vue";
+import EditModal from "./EditModal.vue";
+import DeleteModal from "./DeleteModal.vue";
+import SearchNote from "../mixins/SearchNote";
 
 export default {
-  data(){
+  data() {
     return {
-      isActive: '',
-      showIsActive: '',
-      editIsActive: '',
-      deleteIsActive: '',
-      deleteCurrent: '',
-      notes:[],
-      Searchnotes:[],
-      keyword:'',
-    }
+      isActive: "",
+      showIsActive: "",
+      editIsActive: "",
+      deleteIsActive: "",
+      deleteCurrent: "",
+      notes: [],
+      Searchnotes: [],
+      keyword: "",
+      pagination:{}
+    };
   },
-  methods:{
-    openAdd(){
-      this.isActive = 'is-active';
+  methods: {
+    openAdd() {
+      this.isActive = "is-active";
     },
-    openShow(key){
-      this.showIsActive = 'is-active';
+    openShow(key) {
+      this.showIsActive = "is-active";
       this.$children[1].note = this.notes[key];
     },
-    openEdit(key){
-      this.editIsActive = 'is-active';
+    openEdit(key) {
+      this.editIsActive = "is-active";
       this.$children[2].note = this.notes[key];
     },
-    openDelete(key){
-      this.deleteIsActive = 'is-active';
+    openDelete(key) {
+      this.deleteIsActive = "is-active";
       this.deleteCurrent = key;
       this.$children[3].note = this.notes[key];
       this.$children[3].itemKey = key;
     },
-    colseModals(){
-      this.isActive = this.showIsActive = this.editIsActive = this.deleteIsActive = '';
+    colseModals() {
+      this.isActive = this.showIsActive = this.editIsActive = this.deleteIsActive =
+        "";
     },
-    PushNote(note){
+    PushNote(note) {
       this.notes.push(note.data);
     },
-    DeleteNote(key){
-      this.notes.splice(this.deleteCurrent,1);
+    DeleteNote(key) {
+      this.notes.splice(this.deleteCurrent, 1);
     },
+    fetchNotes(page_url){
+      let vm = this;
+      page_url = page_url || "/notes";
+
+      
+
+      axios .get(page_url)
+      .then(response => {
+        //console.log(response.data.data);
+        this.notes = this.Searchnotes = response.data.data;
+        let links ={
+          "current_page" :response.data.current_page,
+          "first_page_url" :response.data.first_page_url,
+          "last_page_url" :response.data.last_page_url,
+          "last_page" :response.data.last_page,
+          "next_page_url" :response.data.next_page_url,
+          "prev_page_url" :response.data.prev_page_url,
+          "from" :response.data.from,
+          "to" :response.data.to,
+          "total" :response.data.total
+        }
+        vm.makePagination(links);
+      })
+      .catch(error => console.log(error));
+     
+    },
+    makePagination(links){
+      this.pagination  = links;
+    }
+
   },
-  created(){
-    axios.get('/notes').then(response =>{
-      //console.log(response.data);
-      this.notes = this.Searchnotes = response.data;
-    }).catch(error =>console.log(error));
+  created() {
+    this.fetchNotes();
   },
   mounted() {
     //console.log(this.$children);
   },
-  components:{
-    Addmodal,ShowModal,EditModal,DeleteModal
+  components: {
+    Addmodal,
+    ShowModal,
+    EditModal,
+    DeleteModal
   },
-  mixins:[SearchNote]
-
-}
+  mixins: [SearchNote]
+};
 </script>
 
 
 <style scoped>
-
-p{
+p {
   color: green;
   font-size: 24px;
   font-weight: bold;
 }
-
-
+.pagination{
+  margin-top:  20px;
+}
+.single-note{
+  margin-top:  5px;
+}
+.isDisabled {
+  color: currentColor;
+  cursor: not-allowed;
+  opacity: 0.5;
+  text-decoration: none;
+}
 </style>
