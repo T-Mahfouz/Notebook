@@ -58,7 +58,7 @@ class NoteController extends Controller
 
     public function allNotes(Request $request)
     {
-        $notes = Note::orderBy('title','ASC')->get();
+        $notes = Note::orderBy('title','ASC')->paginate(5);
         return $notes;
     }
     /**
