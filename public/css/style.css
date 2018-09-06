@@ -1,0 +1,12 @@
+*{
+    font-family: times;
+}
+.main-content{
+  min-height: 520px;
+}
+.a-link-header{
+    margin-top: 7px;
+    font-size: 18px !important;
+    padding: 18px;
+    margin-left: 5px;
+}
